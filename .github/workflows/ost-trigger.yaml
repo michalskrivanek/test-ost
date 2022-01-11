@@ -21,7 +21,7 @@ jobs:
           OST_LISTEN_PORT: ${{ secrets.OST_LISTEN_PORT }}
         run: |
           cd /var/lib/nginx/gh
-          echo ${{ inputs.url }} | runuser -u nginx tee queue
+          echo ${{ github.event.inputs.url }} | runuser -u nginx tee queue
           nc -l -I 256 -W 1 ${OST_LISTEN_PORT} | grep '^run$'
           mv -f queue run
           nc -l -I 256 -W 1 ${OST_LISTEN_PORT} | grep '^rm$'
