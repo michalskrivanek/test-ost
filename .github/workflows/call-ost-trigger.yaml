@@ -1,7 +1,7 @@
 name: ost-after-approved-build
 on:
   workflow_run:
-    workflows: ["build"]
+    workflows: ["ci build"]
     types:
       - completed
       
