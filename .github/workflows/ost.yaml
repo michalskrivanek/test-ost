@@ -18,8 +18,6 @@ jobs:
     needs: call-ost-trigger
     if: ${{ always() }} 
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
     steps:
       - name: Acknowledge command
         uses: actions/github-script@v5
@@ -35,7 +33,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               status: 'queued',
-              head_sha: context.head.sha,
+              head_sha: context.payload.pull_request.head.sha,
               name: 'OST check',
             });
 
