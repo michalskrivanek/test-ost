@@ -22,6 +22,7 @@ jobs:
       - name: Acknowledge command
         uses: actions/github-script@v5
         with:
+          # repo:public_repo write:discussion
           github-token: ${{ secrets.TEST }}
           script: |
             github.rest.reactions.createForIssueComment({
@@ -34,7 +35,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               status: 'queued',
-              head_sha: context.payload.pull_request.head.sha,
+              head_sha: context.payload.pull_request,
               name: 'OST check',
             });
 
