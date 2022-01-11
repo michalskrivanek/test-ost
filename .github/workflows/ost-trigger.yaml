@@ -8,7 +8,7 @@ on:
     secrets:
       OST_LISTEN_PORT:
         required: true
-        type: string
+
   workflow_dispatch:
     inputs:
       url:
