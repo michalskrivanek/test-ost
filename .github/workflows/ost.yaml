@@ -35,7 +35,7 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               status: 'queued',
-              head_sha: context.payload.head.sha,
+              head_sha: context.head.sha,
               name: 'OST check',
             });
 
