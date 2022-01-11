@@ -25,11 +25,18 @@ jobs:
         uses: actions/github-script@v5
         with:
           script: |
-            github.reactions.createForIssueComment({
+            github.rest.reactions.createForIssueComment({
               comment_id: context.payload.comment.id,
               owner: context.repo.owner,
               repo: context.repo.repo,
               content: 'rocket',
+            });
+            github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              status: 'queued',
+              head_sha: context.payload.head.sha,
+              name: 'OST check',
             });
 
   log:
