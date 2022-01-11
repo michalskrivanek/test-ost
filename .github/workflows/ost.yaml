@@ -1,17 +1,15 @@
-name: ost-after-approved-build
+name: ost
 on:
-  workflow_run:
-    workflows: ["ci build"]
-    types:
-      - completed
-      
+  issue_comment:
+    types: [created]
 jobs:
   call-ost-trigger:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.review.state == 'approved' }}
+    if: ${{ github.event.issue.pull_request && github.event.review.state == 'approved' && github.event.comment.body == '/ost'}}
     uses: oVirt/test-ost/.github/workflows/ost-trigger.yaml@main
     with:
       url: ${{ github.event.workflow_run.artifacts_url }}
   log:
+    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/ost'}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/github-script@v5
