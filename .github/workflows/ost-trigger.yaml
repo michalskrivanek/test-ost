@@ -2,7 +2,7 @@ name: ost-trigger
 on:
   workflow_call:
     inputs:
-      url:
+      pr_url:
         required: true
         type: string
     secrets:
@@ -25,7 +25,7 @@ jobs:
           OST_LISTEN_PORT: ${{ secrets.OST_LISTEN_PORT }}
         run: |
           cd /var/lib/nginx/gh
-          echo ${{ github.event.inputs.url }} | runuser -u nginx tee queue
+          echo ${{ github.event.inputs.pr_url }} | runuser -u nginx tee queue
           nc -l -I 256 -W 1 ${OST_LISTEN_PORT} | grep '^run$'
           mv -f queue run
           nc -l -I 256 -W 1 ${OST_LISTEN_PORT} | grep '^rm$'

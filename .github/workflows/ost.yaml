@@ -10,7 +10,7 @@ jobs:
     if: ${{ github.event.issue.pull_request && github.event.comment.body == '/ost'}}
     uses: oVirt/test-ost/.github/workflows/ost-trigger.yaml@main
     with:
-      url: "neco${{ github.event.issue.pull_request }}"
+      pr_url: "neco${{ github.event.issue.pull_request }}"
     secrets:
       OST_LISTEN_PORT: ${{ secrets.OST_LISTEN_PORT }}
 
