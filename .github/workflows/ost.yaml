@@ -14,7 +14,7 @@ jobs:
   triggered:
     needs: call-ost-trigger
     runs-on: ubuntu-latest
-	steps:
+    steps:
       - name: Acknowledge command
         uses: actions/github-script@v5
         with:
