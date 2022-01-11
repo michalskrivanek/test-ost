@@ -8,6 +8,20 @@ jobs:
     uses: oVirt/test-ost/.github/workflows/ost-trigger.yaml@main
     with:
       url: ${{ github.event.workflow_run.artifacts_url }}
+  triggered:
+    needs: call-ost-trigger
+    runs-on: ubuntu-latest
+	steps:
+      - name: Acknowledge command
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.reactions.createForIssueComment({
+              comment_id: context.payload.comment.id,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              content: 'rocket',
+            });
   log:
     if: ${{ github.event.issue.pull_request && github.event.comment.body == '/ost'}}
     runs-on: ubuntu-latest
