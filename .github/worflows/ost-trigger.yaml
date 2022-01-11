@@ -1,0 +1,29 @@
+name: ost-trigger
+on:
+  workflow_call:
+    inputs:
+      url:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      url:
+        required: true
+        type: string
+      
+jobs:
+  trigger-ost:
+    runs-on: self-hosted
+    timeout-minutes: 2 # should get enqueued within 1m
+    steps:
+      - name: trigger
+        env:
+          OST_LISTEN_PORT: ${{ secrets.OST_LISTEN_PORT }}
+        run: |
+          cd /var/lib/nginx/gh
+          echo ${{ inputs.url }} | runuser -u nginx tee queue
+          nc -l -I 256 -W 1 ${OST_LISTEN_PORT} | grep '^run$'
+          mv -f queue run
+          nc -l -I 256 -W 1 ${OST_LISTEN_PORT} | grep '^rm$'
+          rm -f run
+          nc -l -I 256 -W 1 ${OST_LISTEN_PORT} | grep '^done$'

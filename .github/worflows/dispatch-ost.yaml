@@ -1,0 +1,17 @@
+name: dispatch-ost
+on:
+  repository_dispatch:
+    types: [ost]
+  workflow_dispatch:
+    inputs:
+      x:
+        required: false
+        default: 'y' 
+jobs:
+  process-ost-result:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo compare ${{ github.event.client_payload.sha }}
+      - uses: actions/github-script@v5
+        with:
+          script: console.log(context)
