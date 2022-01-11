@@ -22,6 +22,7 @@ jobs:
       - name: Acknowledge command
         uses: actions/github-script@v5
         with:
+          github-token: ${{ secrets.TEST }}
           script: |
             github.rest.reactions.createForIssueComment({
               comment_id: context.payload.comment.id,
