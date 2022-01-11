@@ -8,6 +8,10 @@ on:
 jobs:
   call-ost-trigger:
     if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.review.state == 'approved' }}
-    uses: oVirt/test-ost/.github/workflows/ost-trigger.yaml@master
-    with:
-      url: ${{ github.event.workflow_run.artifacts_url }}
+    steps:
+      - uses: actions/github-script@v5
+        with:
+          script: console.log(context)
+      - uses: oVirt/test-ost/.github/workflows/ost-trigger.yaml@main
+        with:
+          url: ${{ github.event.workflow_run.artifacts_url }}
