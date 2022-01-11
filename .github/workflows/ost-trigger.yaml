@@ -11,7 +11,7 @@ on:
 
   workflow_dispatch:
     inputs:
-      url:
+      pr_url:
         required: true
         type: string
       
