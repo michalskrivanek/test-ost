@@ -5,6 +5,10 @@ on:
       url:
         required: true
         type: string
+    secrets:
+      OST_LISTEN_PORT:
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       url:
