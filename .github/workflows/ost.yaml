@@ -13,7 +13,7 @@ on:
 jobs:
   trigger-ost:
 # if: ${{ github.event.issue.pull_request && github.event.review.state == 'approved' && github.event.comment.body == '/ost'}}
-    if: ${{ (github.event.issue.pull_request && github.event.comment.body == '/ost') || inputs.pr_url }}
+    if: ${{ (github.event.issue.pull_request && github.event.comment.body == '/ost') || github.event.inputs.pr_url }}
     runs-on: self-hosted
     timeout-minutes: 2
     steps:
