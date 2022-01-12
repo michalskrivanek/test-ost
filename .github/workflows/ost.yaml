@@ -21,7 +21,7 @@ jobs:
         env:
           SHA: "${{ github.event.issue.pull_request.head.sha }}"
           CHECK_SUITES: "${{ github.event.issue.pull_request.head.repo.url }}/commits/${{ github.event.issue.pull_request.head.sha }}/check-suites"
-          PR_URL: "${{ github.event.issue.pull_request.url }}"
+          PR_URL: "${{ github.event.issue.pull_request.url }}${{ github.event.inputs.pr_url }}"
         run: |
           cd /var/lib/nginx/gh
           set -x
