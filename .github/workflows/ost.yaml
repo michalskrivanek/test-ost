@@ -1,17 +1,41 @@
 name: ost
+
 on:
   issue_comment:
     types: [created]
+
+  workflow_dispatch:
+    inputs:
+      pr_url:
+        required: true
+        type: string
+
 jobs:
-  call-ost-trigger:
-    if: ${{ github.event.issue.pull_request && github.event.review.state == 'approved' && github.event.comment.body == '/ost'}}
-    uses: oVirt/test-ost/.github/workflows/ost-trigger.yaml@main
-    with:
-      url: ${{ github.event.workflow_run.artifacts_url }}
-  log:
-    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/ost'}}
-    runs-on: ubuntu-latest
+  trigger-ost:
+# if: ${{ github.event.issue.pull_request && github.event.review.state == 'approved' && github.event.comment.body == '/ost'}}
+    if: ${{ (github.event.issue.pull_request && github.event.comment.body == '/ost') || github.event.inputs.pr_url }}
+    runs-on: self-hosted
+    timeout-minutes: 4
     steps:
-      - uses: actions/github-script@v5
-        with:
-          script: console.log(context)
+      - name: trigger
+        env:
+          SHA: "${{ github.event.issue.pull_request.head.sha }}"
+          CHECK_SUITES: "${{ github.event.issue.pull_request.base.repo.url }}/commits/${{ github.event.issue.pull_request.head.sha }}/check-suites"
+          PR_URL: "${{ github.event.issue.pull_request.url }}${{ github.event.inputs.pr_url }}"
+        run: |
+          cd /var/lib/nginx/gh
+          [[ -z "$SHA" ]] && { SHA=$(curl -sS ${PR_URL} | jq -r .head.sha); CHECK_SUITES="$(curl -sS ${PR_URL} | jq -r .base.repo.url)/commits/${SHA}/check-suites"; }
+          BASE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==164117) | select(.head_commit.id==\"${SHA}\") | .updated_at")
+          [[ -z "$BASE_TIME" ]] && echo "no OST app in: $(curl -sS ${CHECK_SUITES} | jq -r \".check_suites[].app.name\")"; 
+          echo "last update: $BASE_TIME"
+          echo "${PR_URL}" | runuser -u nginx tee queue
+          i=0
+          while [ $i -lt 12 ]; do
+            sleep 10
+            UPDATE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==164117) | select(.head_commit.id==\"${SHA}\") | .updated_at")
+            [[ -z "$UPDATE_TIME" ]] && { echo error getting update; UPDATE_TIME=$BASE_TIME; }
+            echo "try $((i++)): $UPDATE_TIME"
+            [[ "$BASE_TIME" != "$UPDATE_TIME" ]] && break
+          done
+          rm -f queue
+          [[ "$BASE_TIME" != "$UPDATE_TIME" ]]
