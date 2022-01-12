@@ -26,14 +26,15 @@ jobs:
           cd /var/lib/nginx/gh
           [[ -z "$SHA" ]] && { SHA=$(curl -sS ${PR_URL} | jq -r .head.sha); CHECK_SUITES="$(curl -sS ${PR_URL} | jq -r .base.repo.url)/commits/${SHA}/check-suites"; }
           BASE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==164117) | select(.head_commit.id==\"${SHA}\") | .updated_at")
-          [[ -z "$BASE_TIME" ]] && { echo error getting suites; exit 1; }
+          [[ -z "$BASE_TIME" ]] && echo "no OST app in: $(curl -sS ${CHECK_SUITES} | jq -r \".check_suites[].app.name\")"; 
+          echo "last update: $BASE_TIME"
           echo "${PR_URL}" | runuser -u nginx tee queue
           i=0
           while [ $i -lt 12 ]; do
             sleep 10
             UPDATE_TIME=$(curl -sS ${CHECK_SUITES} | jq -r ".check_suites[] | select(.app.id==164117) | select(.head_commit.id==\"${SHA}\") | .updated_at")
             [[ -z "$UPDATE_TIME" ]] && { echo error getting update; UPDATE_TIME=$BASE_TIME; }
-            echo -n "try $((i++)): $UPDATE_TIME"
+            echo "try $((i++)): $UPDATE_TIME"
             [[ "$BASE_TIME" != "$UPDATE_TIME" ]] && break
           done
           rm -f queue
