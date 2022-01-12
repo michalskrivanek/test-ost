@@ -24,6 +24,7 @@ jobs:
           PR_URL: "${{ github.event.issue.pull_request.url }}"
         run: |
           cd /var/lib/nginx/gh
+          set -x
           [[ -z "$SHA" ]] && { SHA=$(curl ${PR_URL} | jq .head.sha); CHECK_SUITES="$(curl ${PR_URL} | jq .head.repo.url)/commits/${SHA}/check-suites"; }
           curl ${CHECK_SUITES} | jq ".check_suites[] | select(.app.id==164117) | select(.head_commit.id==\"${SHA}\") | .updated_at"
           echo ${{inputs.pr_url }}${{ github.event.issue.pull_request.url }} | runuser -u nginx tee queue
