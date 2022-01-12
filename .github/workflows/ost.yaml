@@ -4,45 +4,31 @@ on:
   issue_comment:
     types: [created]
 
+  workflow_dispatch:
+    inputs:
+      pr_url:
+        required: true
+        type: string
+
 jobs:
-  call-ost-trigger:
+  trigger-ost:
 # if: ${{ github.event.issue.pull_request && github.event.review.state == 'approved' && github.event.comment.body == '/ost'}}
-    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/ost'}}
-    uses: oVirt/test-ost/.github/workflows/ost-trigger.yaml@main
-    with:
-      pr_url: ${{ github.event.issue.pull_request.url }}
-    secrets:
-      OST_LISTEN_PORT: ${{ secrets.OST_LISTEN_PORT }}
-
-  triggered:
-    needs: call-ost-trigger
-    if: ${{ always() }} 
-    runs-on: ubuntu-latest
+    if: ${{ (github.event.issue.pull_request && github.event.comment.body == '/ost') || inputs.pr_url }}
+    runs-on: self-hosted
+    timeout-minutes: 2
     steps:
-      - name: Acknowledge command
-        uses: actions/github-script@v5
-        with:
-          # repo:public_repo write:discussion
-          github-token: ${{ secrets.TEST }}
-          script: |
-            github.rest.reactions.createForIssueComment({
-              comment_id: context.payload.comment.id,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              content: 'rocket',
-            });
-            github.rest.checks.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              status: 'queued',
-              head_sha: context.payload.pull_request,
-              name: 'OST check',
-            });
-
-  log:
-    if: ${{ github.event.issue.pull_request && github.event.comment.body == '/ost'}}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/github-script@v5
-        with:
-          script: console.log(context)
+      - name: trigger
+        env:
+          SHA: "${{github.event.issue.pull_request.head.sha }}"
+          CHECK_SUITES: "${{ github.event.issue.pull_request.head.repo.url }}/commits/${{ github.event.issue.pull_request.head.sha }}/check-suites"
+          PR_URL: "${{ github.event.issue.pull_request.url }}"
+        run: |
+          cd /var/lib/nginx/gh
+          curl ${CHECK_SUITES} | jq ".check_suites[] | select(.app.id==164117) | select(.head_commit.id==\"${SHA}\") | .updated_at"
+          echo ${{inputs.pr_url }}${{ github.event.issue.pull_request.url }} | runuser -u nginx tee queue
+          i = 0
+          while [ $i -lt 12 ]; do
+            sleep 10
+            curl ${CHECK_SUITES} | jq ".check_suites[] | select(.app.id==164117) | select(.head_commit.id==\"${SHA}\") | .updated_at"
+            ((i++))
+          done 
